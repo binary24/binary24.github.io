@@ -1,0 +1,693 @@
+swagger: '2.0'
+info:
+  version: 0.8.1
+  title: Binary24 - Binary Options platform API
+  description: |
+    # Overview
+
+    This documentation describes the Binary24 platfrom REST API, which was developed for users to connect their applications to automate their strategies. This documentation describes connecting to our backend system by authenticating using Bearer OAuth2 token.
+
+    ### Authorization
+
+    Each request which is marked as secured requires developer to authorize with Bearer token. You can get your token by logging to the [Binary24 platform](https://app.binary24.com) and going to your account settings. You should put the token into `Authorization` header with a prefix called `Bearer`.
+
+    *Example request:*
+
+    ```
+    POST https://api.binary24.com/api/transactions HTTP/1.1
+    Authorization: Bearer {Authorization token}
+    Content-Type: application/json
+    Accept: application/json
+
+    {}
+    ```
+
+    ### Limits
+
+    REST API has request limits - **60 requests per minute**
+
+    ### Swagger
+
+    This specification has been generated using outstanding [Swagger](http://swagger.io) technology. Swagger will do most of the work for you. Download Binary24 Swagger [specification](https://binary24.github.io/swagger.yaml), Copy-Paste it into [Online Swagger Editor](http://editor.swagger.io/) and generate an application using of 1 of 26 frameworks.
+
+  contact:
+    url: 'https://binary24.com'
+    name: Binary24
+    email: info@binary24.com
+host: backend.binary24.com
+basePath: /api
+tags:
+  - name: api
+    description: API for users
+securityDefinitions:
+  api_key:
+    type: apiKey
+    name: Authorization
+    in: header
+definitions:
+  Currency:
+    type: object
+    title: Currency
+    properties:
+      name:
+        type: string
+        description: Currency name
+      code:
+        type: string
+        description: Currency code
+      precision:
+        type: number
+        description: Precision of currency (how many places after comma to show)
+      isCrypto:
+        type: boolean
+        description: Determines if the currency is a crypto currency (like bitcoin)
+      isActive:
+        type: boolean
+        description: >-
+          Determines if the currency is active (is it possible to have wallet in
+          this currency)
+      isDisplayable:
+        type: boolean
+        description: Determines if the currency is displayable on front-end
+      icon:
+        type: string
+        description: Currency icon (displayed on front-end)
+  ConversionRate:
+    type: object
+    title: Conversion Rate
+    properties:
+      rates:
+        type: object
+        description: Rates map has all the rates stored with key-value format
+        properties:
+          USD:
+            type: number
+          DEMO:
+            type: number
+          BTC:
+            type: number
+      expires_at:
+        type: number
+        description: At which point the rates are gonna be updated
+      base_currency:
+        type: string
+        description: Base currency in relation to which the rates are calculated
+  TradingHours:
+    type: object
+    title: Trading Hours
+    properties:
+      '0':
+        type: array
+        description: Each key in this map is a number (0-6) indicating a day in a week begining with a sunday.
+        items:
+          type: object
+          title: Hours
+          properties:
+            to:
+              type: number
+              description: Number of seconds since the 00:00 UTC
+            from:
+              type: number
+              description: Number of seconds since the 00:00 UTC
+  Symbol:
+    type: object
+    title: Symbol
+    properties:
+      id:
+        type: integer
+        description: Symbol ID
+      trading_hours:
+        $ref: '#/definitions/TradingHours'
+      symbol:
+        type: string
+        description: Symbol name
+      precision:
+        type: integer
+        description: How many digits after the decimal point are shown
+      payout:
+        type: number
+        description: Number between 0 and 1. Indicates how big will be the winnings when the order succeeds
+      origin_country:
+        type: string
+        description: Default country which this symbol originates from
+      min_expiration_time:
+        type: integer
+        description: Minimum duration for orders in this symbol in seconds
+      max_trade_size:
+        type: number
+        description: Maximum order size for this symbol in default currency (USD)
+      max_expiration_time:
+        type: integer
+        description: Maximum duration for orders in this symbol in seconds
+      last_price:
+        type: number
+        description: Current price for this symbol
+      image:
+        type: string
+        description: Image shown on front-end
+      group:
+        type: string
+        description: Group shown on front-end
+      description:
+        type: string
+        description: Description of symbol shown on front-end
+      exchange:
+        type: string
+        description: Which exchange provides this symbol (shown on front-end)
+
+  TradingHoliday:
+    type: object
+    title: Trading Holiday
+    properties:
+      time_to:
+        type: integer
+        description: Number of seconds since the 00:00 UTC
+      time_from:
+        type: integer
+        description: Number of seconds since the 00:00 UTC
+      name:
+        type: string
+        description: Holiday name
+      date:
+        type: string
+        format: date
+        description: Actual date on which the holiday takes place
+  TransactionDetails:
+    type: object
+    title: TransactionDetails
+    properties:
+      value:
+        type: number
+      tx:
+        type: string
+      symbol:
+        type: string
+      processor_id:
+        type: string
+      payout:
+        type: number
+      open_price:
+        type: number
+      confirmations:
+        type: integer
+      close_price:
+        type: number
+      address:
+        type: string
+  Transaction:
+    type: object
+    title: Transaction
+    properties:
+      type:
+        type: string
+      status:
+        type: string
+      profit:
+        type: integer
+      open_time:
+        type: integer
+      id:
+        type: integer
+      details:
+        $ref: '#/definitions/TransactionDetails'
+      currency:
+        type: string
+      comment:
+        type: string
+      close_time:
+        type: integer
+  Quote:
+    type: object
+    title: Quote
+    properties:
+      timestamp:
+        type: integer
+      symbol:
+        type: string
+      price:
+        type: number
+
+  Candle:
+    type: object
+    title: Candle
+    properties:
+      volume:
+        type: number
+      timestamp:
+        type: integer
+      symbol:
+        type: string
+      open:
+        type: number
+      low:
+        type: number
+      high:
+        type: number
+      close:
+        type: number
+
+  CreateOrder:
+    type: object
+    title: CreateOrder
+    properties:
+      order:
+        type: object
+        title: OrderArgs
+        required:
+          - value
+          - type
+          - symbol
+          - period
+          - currency
+        properties:
+          value:
+            type: number
+            default: 0.1
+          type:
+            type: string
+            enum:
+              - "up"
+              - "down"
+          symbol:
+            type: string
+            example: BTCUSD
+          period:
+            type: integer
+            default: 10
+          currency:
+            type: string
+            default: DEMO
+          comment:
+            type: string
+            default: ''
+
+
+  CurrenciesResponse:
+    properties:
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Currency'
+  ConversionRatesResponse:
+    properties:
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/ConversionRate'
+  SymbolsResponse:
+    properties:
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Symbol'
+  TradingHolidaysResponse:
+    type: object
+    title: TradingHolidaysResponse
+    properties:
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/TradingHoliday'
+  TradingHoursResponse:
+    type: object
+    title: TradingHoursResponse
+    properties:
+      data:
+        $ref: '#/definitions/TradingHours'
+  CreateOrderResponse:
+    type: object
+    title: CreateOrderResponse
+    properties:
+      data:
+        $ref: '#/definitions/Transaction'
+  QuotesResponse:
+    type: object
+    title: QuotesResponse
+    properties:
+      data:
+        type: array
+        title: QuotesCollection
+        items:
+          $ref: '#/definitions/Quote'
+  CandlesResponse:
+    type: object
+    title: CandlesResponse
+    properties:
+      data:
+        type: array
+        title: CandlesCollection
+        items:
+          $ref: '#/definitions/Candle'
+  ErrorModel:
+    type: object
+    required:
+      - message
+      - status
+      - type
+    properties:
+      type:
+        type: string
+      message:
+        type: string
+      status:
+        type: integer
+        minimum: 100
+        maximum: 6000
+  ErrorResponse:
+    type: object
+    properties:
+      errors:
+        type: array
+        items:
+          $ref: '#/definitions/ErrorModel'
+paths:
+  /currencies:
+    get:
+      tags:
+        - api
+      summary: Get all currencies
+      description: Displays all currencies available in which users have their wallets
+      operationId: getCurrencies
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Currencies list
+          schema:
+            $ref: '#/definitions/CurrenciesResponse'
+  /currencies/conversion_rates:
+    get:
+      tags:
+        - api
+      summary: Get conversion rates
+      description: >-
+        Lists current conversion rates used by an application to calculate value of currencies (rates are calculated in accordance to `base_currency`)
+      operationId: getConversionRates
+      responses:
+        '200':
+          description: Conversion rates list
+          schema:
+            $ref: '#/definitions/ConversionRatesResponse'
+  /symbols:
+    get:
+      tags:
+        - api
+      summary: Get all symbols
+      description: >-
+        Lists symbol settings. Symbols are the market instruments on which you are able to make orders.
+      responses:
+        '200':
+          description: Symbols list
+          schema:
+            $ref: '#/definitions/SymbolsResponse'
+  /symbols/trading_holidays/{symbol}:
+    get:
+      tags:
+        - api
+      summary: Get trading holidays for symbol
+      parameters:
+        - type: string
+          required: true
+          name: symbol
+          in: path
+          description: Symbol
+      responses:
+        '200':
+          description: Symbol trading holidays
+          schema:
+            $ref: '#/definitions/TradingHolidaysResponse'
+      description: |
+        Displays trading holidays for symbol. During the holidays the trading is closed.
+
+        From/To - how many seconds since 00:00 UTC
+  /symbols/trading_hours/{symbol}:
+    get:
+      tags:
+        - api
+      summary: Get trading hours for symbol
+      parameters:
+        - type: string
+          required: true
+          name: symbol
+          in: path
+          description: Symbol
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/TradingHoursResponse'
+          description: 'Symbol trading hours (0 - sunday, 1 - monday, etc)'
+      description: |
+        Displays symbol trading hours<br>
+        <br>
+        From/To - how many seconds since 00:00
+  /orders:
+    post:
+      tags:
+        - api
+      summary: Create order
+      responses:
+        '201':
+          schema:
+            $ref: '#/definitions/CreateOrderResponse'
+          description: returns created order
+        '422':
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+          description: default error
+      parameters:
+        - schema:
+            $ref: '#/definitions/CreateOrder'
+          required: true
+          name: body
+          in: body
+          description: Request JSON body
+      description: Creates order
+      security:
+      - api_key: []
+  /transactions:
+    post:
+      tags:
+        - api
+      summary: Get filtered transactions
+      responses:
+        '200':
+          schema:
+            type: object
+            title: TransactionsResponse
+            properties:
+              data:
+                type: array
+                title: TransactionsCollection
+                items:
+                  type: object
+                  title: Transaction
+                  properties:
+                    type:
+                      type: string
+                    status:
+                      type: string
+                    profit:
+                      type: integer
+                    open_time:
+                      type: integer
+                    id:
+                      type: integer
+                    details:
+                      type: object
+                      title: TransactionDetails
+                      properties:
+                        value:
+                          type: number
+                        tx:
+                          type: string
+                        symbol:
+                          type: string
+                        processor_id:
+                          type: string
+                        payout:
+                          type: number
+                        open_price:
+                          type: number
+                        confirmations:
+                          type: integer
+                        close_price:
+                          type: number
+                        address:
+                          type: string
+                    currency:
+                      type: string
+                    comment:
+                      type: string
+                    close_time:
+                      type: integer
+          description: Transactions list
+      parameters:
+        - schema:
+            type: object
+            title: TransactionsArgs
+            properties:
+              paging:
+                type: object
+                title: PagingArgs
+                properties:
+                  page_size:
+                    type: integer
+                  page:
+                    type: integer
+              filter:
+                type: object
+                title: FilterArgs
+                properties:
+                  value:
+                    type: object
+                    properties:
+                      to:
+                        type: number
+                      from:
+                        type: number
+                  type:
+                    type: array
+                    items:
+                      type: string
+                    default:
+                      - up
+                      - down
+                      - deposit
+                      - withdrawal
+                  symbol:
+                    type: array
+                    items:
+                      type: string
+                    default:
+                      - BTCCNY
+                  status:
+                    type: array
+                    items:
+                      type: string
+                    default:
+                      - waiting
+                      - settled
+                      - cancelled
+                  profit:
+                    type: object
+                    properties:
+                      to:
+                        type: number
+                      from:
+                        type: number
+                  open_time:
+                    type: object
+                    properties:
+                      to:
+                        type: integer
+                        default: 1484668999652
+                      from:
+                        type: integer
+                        default: 1484668999652
+                  open_price:
+                    type: object
+                    properties:
+                      to:
+                        type: number
+                      from:
+                        type: number
+                  duration:
+                    type: object
+                    properties:
+                      to:
+                        type: integer
+                      from:
+                        type: integer
+                    default:
+                      to: 100
+                      from: 0
+                  currency:
+                    type: array
+                    items:
+                      type: string
+                      default: BTC
+                  comment:
+                    type: string
+                    default: No quotes
+                  close_time:
+                    type: object
+                    properties:
+                      to:
+                        type: integer
+                        default: 1484668999652
+                      from:
+                        type: integer
+                        default: 1484668999652
+                  close_price:
+                    type: object
+                    properties:
+                      to:
+                        type: number
+                      from:
+                        type: number
+          required: false
+          name: body
+          in: body
+          description: JSON request
+      description: Displays user transactions with pagination and filters
+      security:
+      - api_key: []
+  /quotes/{symbol}:
+    get:
+      tags:
+        - api
+      summary: Get quotes for symbol
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/QuotesResponse'
+          description: Quotes list
+      parameters:
+        - type: integer
+          required: false
+          name: time_from
+          in: query
+          description: Timestamp from which to show quotes
+        - type: integer
+          required: false
+          name: time_to
+          in: query
+          description: Timestamp till which to show quotes
+        - type: string
+          required: true
+          name: symbol
+          in: path
+          description: Symbol
+      description: Quotes for symbol
+  /quotes/candles/{symbol}:
+    get:
+      tags:
+        - api
+      summary: Get candles for symbol
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/CandlesResponse'
+          description: Orders list
+      parameters:
+        - type: integer
+          required: false
+          name: time_from
+          in: query
+          description: Timestamp from which to show candles
+        - type: integer
+          required: false
+          name: time_to
+          in: query
+          description: Timestamp till which to show candles
+        - type: string
+          required: true
+          name: symbol
+          in: path
+          description: Symbol
+        - type: string
+          required: true
+          name: period
+          in: query
+          description: Period
+      description: Candles (aggregating quotes)
