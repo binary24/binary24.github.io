@@ -34,7 +34,7 @@ info:
     url: 'https://binary24.com'
     name: Binary24
     email: info@binary24.com
-host: backend.binary24.com
+host: api.binary24.com
 basePath: /api
 tags:
   - name: api
