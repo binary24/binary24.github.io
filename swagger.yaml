@@ -11,13 +11,18 @@ info:
 
     Each request which is marked as secured requires developer to authorize with Bearer token. You can get your token by logging to the [Binary24 platform](https://app.binary24.com) and going to your account settings. You should put the token into `Authorization` header with a prefix called `Bearer`.
 
+    **REQUIRED HEADER X-Partner**
+
+    Every request needs custom header X-Partner, so your application should add this header with value `Binary24`.
+
     *Example request:*
 
     ```
-    POST https://api.binary24.com/api/transactions HTTP/1.1
+    POST https://api.binotech.com/api/transactions HTTP/1.1
     Authorization: Bearer {Authorization token}
     Content-Type: application/json
     Accept: application/json
+    X-Partner: Binary24
 
     {}
     ```
@@ -35,6 +40,8 @@ info:
     name: Binary24
     email: info@binary24.com
 host: api.binary24.com
+schemes:
+  - https
 basePath: /api
 tags:
   - name: api
@@ -363,6 +370,13 @@ definitions:
 paths:
   /currencies:
     get:
+      parameters:
+        - name: "X-Partner"
+          in: header
+          description: Partner header (Binary24)
+          required: true
+          default: Binary24
+          type: string
       tags:
         - api
       summary: Get all currencies
@@ -377,6 +391,13 @@ paths:
             $ref: '#/definitions/CurrenciesResponse'
   /currencies/conversion_rates:
     get:
+      parameters:
+        - name: "X-Partner"
+          in: header
+          description: Partner header (Binary24)
+          required: true
+          default: Binary24
+          type: string
       tags:
         - api
       summary: Get conversion rates
@@ -390,6 +411,13 @@ paths:
             $ref: '#/definitions/ConversionRatesResponse'
   /symbols:
     get:
+      parameters:
+        - name: "X-Partner"
+          in: header
+          description: Partner header (Binary24)
+          required: true
+          default: Binary24
+          type: string
       tags:
         - api
       summary: Get all symbols
@@ -411,6 +439,12 @@ paths:
           name: symbol
           in: path
           description: Symbol
+        - name: "X-Partner"
+          in: header
+          description: Partner header (Binary24)
+          required: true
+          default: Binary24
+          type: string
       responses:
         '200':
           description: Symbol trading holidays
@@ -431,6 +465,12 @@ paths:
           name: symbol
           in: path
           description: Symbol
+        - name: "X-Partner"
+          in: header
+          description: Partner header (Binary24)
+          required: true
+          default: Binary24
+          type: string
       responses:
         '200':
           schema:
@@ -461,6 +501,12 @@ paths:
           name: body
           in: body
           description: Request JSON body
+        - name: "X-Partner"
+          in: header
+          description: Partner header (Binary24)
+          required: true
+          default: Binary24
+          type: string
       description: Creates order
       security:
       - api_key: []
@@ -629,6 +675,12 @@ paths:
           name: body
           in: body
           description: JSON request
+        - name: "X-Partner"
+          in: header
+          description: Partner header (Binary24)
+          required: true
+          default: Binary24
+          type: string
       description: Displays user transactions with pagination and filters
       security:
       - api_key: []
@@ -658,6 +710,12 @@ paths:
           name: symbol
           in: path
           description: Symbol
+        - name: "X-Partner"
+          in: header
+          description: Partner header (Binary24)
+          required: true
+          default: Binary24
+          type: string
       description: Quotes for symbol
   /quotes/candles/{symbol}:
     get:
@@ -690,4 +748,10 @@ paths:
           name: period
           in: query
           description: Period
+        - name: "X-Partner"
+          in: header
+          description: Partner header (Binary24)
+          required: true
+          default: Binary24
+          type: string
       description: Candles (aggregating quotes)
